@@ -1,0 +1,347 @@
+// BarberFlow — schema Prisma
+// Estratégia multi-tenant: coluna company_id em toda tabela + RLS no Postgres
+// (ver /sql/001_rls_policies.sql). Prisma conecta com um papel privilegiado;
+// a isolação real vem de withTenantContext() em lib/tenant.ts, que seta
+// `app.current_company_id` por transação — RLS é a segunda camada de defesa.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  ADMIN
+  RECEPTIONIST
+  BARBER
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  WAITING
+  IN_PROGRESS
+  DONE
+  CANCELED
+  NO_SHOW
+}
+
+enum SaleItemType {
+  SERVICE
+  PRODUCT
+}
+
+enum PaymentMethod {
+  CASH
+  PIX
+  DEBIT
+  CREDIT
+}
+
+enum TransactionType {
+  REVENUE
+  EXPENSE
+}
+
+model Company {
+  id        String   @id @default(uuid())
+  name      String
+  document  String?
+  logoUrl   String?  @map("logo_url")
+  timezone  String   @default("America/Sao_Paulo")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  branches      Branch[]
+  users         User[]
+  customers     Customer[]
+  services      Service[]
+  products      Product[]
+  appointments  Appointment[]
+  sales         Sale[]
+  transactions  FinancialTransaction[]
+  auditLogs     AuditLog[]
+  loyaltyConfig LoyaltyConfig?
+  subscription  Subscription?
+
+  @@map("companies")
+}
+
+model Branch {
+  id        String   @id @default(uuid())
+  companyId String   @map("company_id")
+  name      String
+  address   String?
+  phone     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  users   User[]
+
+  @@index([companyId])
+  @@map("branches")
+}
+
+model User {
+  id                String    @id @default(uuid())
+  companyId         String    @map("company_id")
+  branchId          String?   @map("branch_id")
+  name              String
+  email             String
+  passwordHash      String    @map("password_hash")
+  role              UserRole
+  commissionPercent Decimal?  @map("commission_percent") @db.Decimal(5, 2) // só relevante para BARBER
+  colorHex          String?   @map("color_hex") // cor do avatar do barbeiro na agenda
+  isActive          Boolean   @default(true) @map("is_active")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  branch            Branch?            @relation(fields: [branchId], references: [id])
+  appointments      Appointment[]      @relation("BarberAppointments")
+  sales             Sale[]
+  saleItems         SaleItem[]
+  auditLogs         AuditLog[]
+  commissionEntries CommissionEntry[]
+
+  @@unique([companyId, email])
+  @@index([companyId])
+  @@map("users")
+}
+
+model Customer {
+  id            String   @id @default(uuid())
+  companyId     String   @map("company_id")
+  name          String
+  phone         String
+  email         String?
+  notes         String?
+  tag           String   @default("novo") // novo | recorrente | vip | inativo
+  loyaltyPoints Int      @default(0) @map("loyalty_points")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+  sales        Sale[]
+
+  @@index([companyId])
+  @@index([companyId, phone])
+  @@map("customers")
+}
+
+model Service {
+  id              String   @id @default(uuid())
+  companyId       String   @map("company_id")
+  name            String
+  price           Decimal  @db.Decimal(10, 2)
+  durationMinutes Int      @map("duration_minutes")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+  saleItems    SaleItem[]
+
+  @@index([companyId])
+  @@map("services")
+}
+
+model Product {
+  id        String   @id @default(uuid())
+  companyId String   @map("company_id")
+  name      String
+  sku       String?
+  costPrice Decimal  @default(0) @map("cost_price") @db.Decimal(10, 2)
+  price     Decimal  @db.Decimal(10, 2)
+  stock     Int      @default(0)
+  minStock  Int      @default(5) @map("min_stock")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  company   Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  saleItems SaleItem[]
+  movements InventoryMovement[]
+
+  @@index([companyId])
+  @@map("products")
+}
+
+model InventoryMovement {
+  id        String   @id @default(uuid())
+  companyId String   @map("company_id")
+  productId String   @map("product_id")
+  type      String // entrada | venda | ajuste | perda | devolucao
+  quantity  Int
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([productId])
+  @@map("inventory_movements")
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  companyId       String            @map("company_id")
+  customerId      String            @map("customer_id")
+  serviceId       String            @map("service_id")
+  barberId        String            @map("barber_id")
+  scheduledAt     DateTime          @map("scheduled_at")
+  durationMinutes Int               @map("duration_minutes")
+  price           Decimal           @db.Decimal(10, 2)
+  status          AppointmentStatus @default(SCHEDULED)
+  notes           String?
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id])
+  service  Service  @relation(fields: [serviceId], references: [id])
+  barber   User     @relation("BarberAppointments", fields: [barberId], references: [id])
+  sale     Sale?
+
+  @@index([companyId, scheduledAt])
+  @@map("appointments")
+}
+
+model Sale {
+  id            String   @id @default(uuid())
+  companyId     String   @map("company_id")
+  customerId    String?  @map("customer_id")
+  barberId      String?  @map("barber_id")
+  appointmentId String?  @unique @map("appointment_id")
+  subtotal      Decimal  @db.Decimal(10, 2)
+  total         Decimal  @db.Decimal(10, 2)
+  status        String   @default("concluida")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer    Customer?    @relation(fields: [customerId], references: [id])
+  barber      User?        @relation(fields: [barberId], references: [id])
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+  items       SaleItem[]
+  payments    Payment[]
+
+  @@index([companyId, createdAt])
+  @@index([companyId, status])
+  @@map("sales")
+}
+
+model SaleItem {
+  id        String       @id @default(uuid())
+  saleId    String       @map("sale_id")
+  type      SaleItemType
+  serviceId String?      @map("service_id")
+  productId String?      @map("product_id")
+  barberId  String?      @map("barber_id")
+  quantity  Int          @default(1)
+  unitPrice Decimal      @map("unit_price") @db.Decimal(10, 2)
+
+  sale    Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  service Service? @relation(fields: [serviceId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+  barber  User?    @relation(fields: [barberId], references: [id])
+
+  @@map("sale_items")
+}
+
+model Payment {
+  id     String        @id @default(uuid())
+  saleId String        @map("sale_id")
+  method PaymentMethod
+  amount Decimal       @db.Decimal(10, 2)
+
+  sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model CommissionEntry {
+  id         String   @id @default(uuid())
+  companyId  String   @map("company_id")
+  barberId   String   @map("barber_id")
+  date       DateTime @db.Date
+  production Decimal  @db.Decimal(10, 2)
+  commission Decimal  @db.Decimal(10, 2)
+  closedAt   DateTime @default(now()) @map("closed_at")
+
+  barber User @relation(fields: [barberId], references: [id])
+
+  @@unique([barberId, date])
+  @@index([companyId, barberId])
+  @@map("commission_entries")
+}
+
+model FinancialTransaction {
+  id          String           @id @default(uuid())
+  companyId   String           @map("company_id")
+  type        TransactionType
+  category    String?
+  description String
+  amount      Decimal          @db.Decimal(10, 2)
+  date        DateTime         @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, date])
+  @@map("financial_transactions")
+}
+
+model LoyaltyConfig {
+  id            String  @id @default(uuid())
+  companyId     String  @unique @map("company_id")
+  pointsPerReal Decimal @default(1) @map("points_per_real") @db.Decimal(5, 2)
+  threshold     Int     @default(500)
+  rewardLabel   String  @default("Corte grátis") @map("reward_label")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("loyalty_configs")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  companyId String   @map("company_id")
+  userId    String?  @map("user_id")
+  action    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id])
+
+  @@index([companyId, createdAt])
+  @@map("audit_logs")
+}
+
+model Plan {
+  id           String  @id @default(uuid())
+  name         String
+  priceMonthly Decimal @map("price_monthly") @db.Decimal(10, 2)
+  maxUsers     Int?    @map("max_users")
+  maxBranches  Int?    @map("max_branches")
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id               String    @id @default(uuid())
+  companyId        String    @unique @map("company_id")
+  planId           String    @map("plan_id")
+  status           String    @default("trial")
+  currentPeriodEnd DateTime? @map("current_period_end")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  plan    Plan    @relation(fields: [planId], references: [id])
+
+  @@map("subscriptions")
+}
