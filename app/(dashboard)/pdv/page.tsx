@@ -268,7 +268,7 @@ function ComandaDetail({
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-ink-soft border-t border-ink-line p-4 pb-6">
+      <div className="mt-4 bg-ink-soft border border-ink-line rounded-2xl p-4">
         <div className="flex justify-between items-baseline mb-2.5">
           <span className="text-sm text-muted">Total da conta</span>
           <span className="font-display text-xl font-semibold text-brass">R$ {fmt(total)}</span>
@@ -472,7 +472,7 @@ function AvulsaSale({
       </div>
 
       {cart.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-ink-soft border-t border-ink-line p-4 pb-6">
+        <div className="mt-4 bg-ink-soft border border-ink-line rounded-2xl p-4">
           <div className="flex justify-between items-baseline mb-2.5">
             <span className="text-sm text-muted">Total</span>
             <span className="font-display text-xl font-semibold text-brass">R$ {fmt(total)}</span>
