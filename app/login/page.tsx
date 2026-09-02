@@ -33,23 +33,19 @@ export default function LoginPage() {
         {/* Painel esquerdo — só aparece em telas grandes */}
         <div className="hidden lg:flex relative flex-col justify-between p-10 overflow-hidden bg-ink">
           <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('/login-bg.jpg')" }}
+          />
+          <div
             className="absolute inset-0"
             style={{
               background:
-                "radial-gradient(circle at 20% 20%, rgba(199,154,84,0.16), transparent 45%), radial-gradient(circle at 80% 85%, rgba(110,126,88,0.14), transparent 45%), linear-gradient(160deg, #1B1815 0%, #24201B 60%, #1B1815 100%)",
+                "linear-gradient(100deg, rgba(27,24,21,0.97) 0%, rgba(27,24,21,0.88) 45%, rgba(27,24,21,0.55) 100%)",
             }}
           />
-          <svg className="absolute inset-0 w-full h-full opacity-[0.07]" preserveAspectRatio="none">
-            <defs>
-              <pattern id="lines" width="46" height="46" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
-                <line x1="0" y1="0" x2="0" y2="46" stroke="#C79A54" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#lines)" />
-          </svg>
 
           <div className="relative z-10">
-            <img src="/logo.png" alt="BarberFlow" className="w-16 h-16 mb-4 rounded-xl object-cover" />
+            <img src="/logo-mark.png" alt="BarberFlow" className="w-16 h-16 mb-4 object-contain" />
             <div className="font-display text-2xl font-semibold tracking-wide">
               BARBER<span className="text-brass">FLOW</span>
             </div>
@@ -69,11 +65,8 @@ export default function LoginPage() {
         <div className="bg-ink-soft flex items-center justify-center p-7 lg:p-12">
           <div className="w-full max-w-sm">
             <div className="flex flex-col items-center text-center mb-7">
-              <div className="w-12 h-12 rounded-full border border-brass/50 flex items-center justify-center mb-4">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C79A54" strokeWidth="2">
-                  <path d="M12 2 4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3z" />
-                  <path d="M9.5 12.5 11 14l3.5-4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+              <div className="w-14 h-14 flex items-center justify-center mb-3">
+                <img src="/logo-mark.png" alt="BarberFlow" className="w-14 h-14 object-contain" />
               </div>
               <h1 className="font-display text-xl font-semibold">Bem-vindo de volta!</h1>
               <p className="text-sm text-muted mt-1">Faça login para acessar sua barbearia</p>
