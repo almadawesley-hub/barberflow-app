@@ -8,6 +8,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -27,41 +28,141 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center px-7 font-sans">
-      <div className="text-center mb-8">
-        <img src="/logo.png" alt="BarberFlow" className="w-24 h-24 mx-auto mb-3" />
-        <div className="text-sm text-muted mt-1">Gestão completa para sua barbearia</div>
+    <div className="min-h-screen bg-ink font-sans flex items-center justify-center p-4 lg:p-8">
+      <div className="w-full max-w-5xl grid lg:grid-cols-2 rounded-3xl overflow-hidden border border-ink-line lg:border-0">
+        {/* Painel esquerdo — só aparece em telas grandes */}
+        <div className="hidden lg:flex relative flex-col justify-between p-10 overflow-hidden bg-ink">
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(circle at 20% 20%, rgba(199,154,84,0.16), transparent 45%), radial-gradient(circle at 80% 85%, rgba(110,126,88,0.14), transparent 45%), linear-gradient(160deg, #1B1815 0%, #24201B 60%, #1B1815 100%)",
+            }}
+          />
+          <svg className="absolute inset-0 w-full h-full opacity-[0.07]" preserveAspectRatio="none">
+            <defs>
+              <pattern id="lines" width="46" height="46" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
+                <line x1="0" y1="0" x2="0" y2="46" stroke="#C79A54" strokeWidth="1" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#lines)" />
+          </svg>
+
+          <div className="relative z-10">
+            <img src="/logo.png" alt="BarberFlow" className="w-16 h-16 mb-4 rounded-xl object-cover" />
+            <div className="font-display text-2xl font-semibold tracking-wide">
+              BARBER<span className="text-brass">FLOW</span>
+            </div>
+            <div className="text-xs text-muted tracking-[0.2em] mt-3 uppercase">
+              Gestão completa para sua barbearia
+            </div>
+          </div>
+
+          <div className="relative z-10 grid grid-cols-3 gap-3">
+            <FeatureBadge label="Relatórios e métricas em tempo real" />
+            <FeatureBadge label="Agenda inteligente e organizada" />
+            <FeatureBadge label="Clientes fiéis, mais resultados" />
+          </div>
+        </div>
+
+        {/* Painel direito — formulário */}
+        <div className="bg-ink-soft flex items-center justify-center p-7 lg:p-12">
+          <div className="w-full max-w-sm">
+            <div className="flex flex-col items-center text-center mb-7">
+              <div className="w-12 h-12 rounded-full border border-brass/50 flex items-center justify-center mb-4">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C79A54" strokeWidth="2">
+                  <path d="M12 2 4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3z" />
+                  <path d="M9.5 12.5 11 14l3.5-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <h1 className="font-display text-xl font-semibold">Bem-vindo de volta!</h1>
+              <p className="text-sm text-muted mt-1">Faça login para acessar sua barbearia</p>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <label className="text-xs font-semibold text-muted block mb-1.5">E-mail</label>
+              <div className="relative mb-4">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="m22 6-10 7L2 6" />
+                  </svg>
+                </span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                  className="w-full bg-ink border border-ink-line rounded-lg pl-9 pr-3 py-2.5 text-ivory text-sm"
+                  required
+                />
+              </div>
+
+              <label className="text-xs font-semibold text-muted block mb-1.5">Senha</label>
+              <div className="relative mb-5">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="10" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-ink border border-ink-line rounded-lg pl-9 pr-9 py-2.5 text-ivory text-sm"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-10-8-10-8a18.5 18.5 0 0 1 5-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 10 8 10 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <path d="m1 1 22 22" />
+                    </svg>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M1 12s3-8 11-8 11 8 11 8-3 8-11 8-11-8-11-8Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+
+              {error && <div className="text-sm text-red-400 mb-4">{error}</div>}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full font-bold rounded-lg py-3 text-ink disabled:opacity-60 transition-transform active:scale-[0.99]"
+                style={{ background: "linear-gradient(135deg, #D9AE68, #B7873F)" }}
+              >
+                {loading ? "Entrando..." : "Entrar"}
+              </button>
+            </form>
+
+            <div className="text-center text-[11px] text-muted mt-8">
+              © {new Date().getFullYear()} BarberFlow. Todos os direitos reservados.
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
+  );
+}
 
-      <form onSubmit={handleSubmit} className="max-w-sm w-full mx-auto">
-        <label className="text-xs font-semibold text-muted block mb-1.5">E-mail</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full bg-ink-soft border border-ink-line rounded-lg px-3 py-2.5 mb-3 text-ivory"
-          required
-        />
-
-        <label className="text-xs font-semibold text-muted block mb-1.5">Senha</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full bg-ink-soft border border-ink-line rounded-lg px-3 py-2.5 mb-4 text-ivory"
-          required
-        />
-
-        {error && <div className="text-sm text-red-400 mb-3">{error}</div>}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-brass text-ink font-bold rounded-lg py-3 disabled:opacity-60"
-        >
-          {loading ? "Entrando..." : "Entrar"}
-        </button>
-      </form>
+function FeatureBadge({ label }: { label: string }) {
+  return (
+    <div className="text-center">
+      <div className="w-9 h-9 mx-auto rounded-full border border-ink-line flex items-center justify-center mb-2 bg-ink-soft/60">
+        <span className="w-1.5 h-1.5 rounded-full bg-brass" />
+      </div>
+      <div className="text-[10px] text-muted leading-tight">{label}</div>
     </div>
   );
 }
