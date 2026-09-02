@@ -48,8 +48,14 @@ export default function BarbeirosPage() {
     setLoadError(null);
     try {
       const [tRes, hRes] = await Promise.all([fetch("/api/commissions/today"), fetch("/api/commissions/history")]);
-      if (!tRes.ok) throw new Error(`/api/commissions/today respondeu ${tRes.status}`);
-      if (!hRes.ok) throw new Error(`/api/commissions/history respondeu ${hRes.status}`);
+      if (!tRes.ok) {
+        const j = await tRes.json().catch(() => ({}));
+        throw new Error(j?.error?.message ?? `/api/commissions/today respondeu ${tRes.status}`);
+      }
+      if (!hRes.ok) {
+        const j = await hRes.json().catch(() => ({}));
+        throw new Error(j?.error?.message ?? `/api/commissions/history respondeu ${hRes.status}`);
+      }
       const tJson = await tRes.json();
       const hJson = await hRes.json();
       setToday(tJson.data ?? []);
