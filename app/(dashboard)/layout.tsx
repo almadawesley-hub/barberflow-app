@@ -9,7 +9,7 @@ const ALL_TABS = [
   { href: "/dashboard", label: "Início", roles: ["ADMIN"] },
   { href: "/agenda", label: "Agenda", roles: ["ADMIN", "RECEPTIONIST", "BARBER"] },
   { href: "/clientes", label: "Clientes", roles: ["ADMIN", "RECEPTIONIST", "BARBER"] },
-  { href: "/pdv", label: "PDV", roles: ["ADMIN", "RECEPTIONIST"] },
+  { href: "/pdv", label: "Vendas", roles: ["ADMIN", "RECEPTIONIST"] },
   { href: "/mais", label: "Mais", roles: ["ADMIN", "RECEPTIONIST", "BARBER"] },
 ];
 
