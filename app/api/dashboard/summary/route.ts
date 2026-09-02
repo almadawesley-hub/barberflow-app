@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { requireUser, requireRole } from "@/lib/session";
 import { withTenantContext } from "@/lib/tenant";
 
-const META_MENSAL = 8000;
-
 /** Um payload único pra alimentar o dashboard — evita a tela inicial
  * disparar N chamadas separadas. */
 export async function GET() {
@@ -19,7 +17,8 @@ export async function GET() {
     dayEnd.setHours(23, 59, 59, 999);
 
     const data = await withTenantContext(user.companyId, async (tx) => {
-      const [salesAgg, salesCount, appointmentsToday, products, customers, barbers] = await Promise.all([
+      const [company, salesAgg, salesCount, appointmentsToday, products, customers, barbers] = await Promise.all([
+        tx.company.findUniqueOrThrow({ where: { id: user.companyId }, select: { monthlyGoal: true } }),
         tx.sale.aggregate({ where: { status: "concluida", createdAt: { gte: monthStart } }, _sum: { total: true } }),
         tx.sale.count({ where: { status: "concluida", createdAt: { gte: monthStart } } }),
         tx.appointment.findMany({ where: { scheduledAt: { gte: dayStart, lte: dayEnd } }, select: { status: true } }),
@@ -63,7 +62,7 @@ export async function GET() {
         vip,
         inativos,
         ranking,
-        metaMensal: META_MENSAL,
+        metaMensal: Number(company.monthlyGoal),
       };
     });
 
