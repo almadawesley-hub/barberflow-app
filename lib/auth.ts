@@ -3,11 +3,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
-// O login é a única operação que consulta `users` sem passar por
-// withTenantContext: nesse ponto ainda não sabemos a empresa do
-// usuário, então buscamos por e-mail (único por empresa, ver
-// schema.prisma) usando o client direto. Depois de autenticado,
-// toda outra query do app passa pelo contexto de tenant.
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
@@ -19,44 +14,19 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials.password) return null;
+        console.log("[auth] authorize chamado, email recebido:", credentials?.email);
 
-        const user = await prisma.user.findFirst({
-          where: { email: credentials.email, isActive: true },
-        });
-        if (!user) return null;
+        if (!credentials?.email || !credentials.password) {
+          console.error("[auth] credenciais ausentes no request");
+          return null;
+        }
 
-        const valid = await bcrypt.compare(credentials.password, user.passwordHash);
-        if (!valid) return null;
+        try {
+          const user = await prisma.user.findFirst({
+            where: { email: credentials.email, isActive: true },
+          });
+          console.log("[auth] usuário encontrado no banco?", !!user);
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          companyId: user.companyId,
-          role: user.role,
-          branchId: user.branchId,
-        } as any;
-      },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.companyId = (user as any).companyId;
-        token.role = (user as any).role;
-        token.branchId = (user as any).branchId;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.sub;
-        (session.user as any).companyId = token.companyId;
-        (session.user as any).role = token.role;
-        (session.user as any).branchId = token.branchId;
-      }
-      return session;
-    },
-  },
-};
+          if (!user) return null;
+
+          const valid = await bcrypt.compare(credentials.password, user.passwordHash);
