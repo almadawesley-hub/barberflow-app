@@ -8,6 +8,7 @@ const schema = z.object({
   name: z.string().min(1).optional(),
   document: z.string().optional(),
   logoUrl: z.string().url().optional(),
+  monthlyGoal: z.number().positive().optional(),
 });
 
 export async function GET() {
