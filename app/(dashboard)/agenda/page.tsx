@@ -221,7 +221,7 @@ function ApptActions({
   if (s === "SCHEDULED" || s === "CONFIRMED") rows.push({ label: "Fazer check-in", onClick: () => onStatus("WAITING") });
   if (s === "WAITING") rows.push({ label: "Iniciar atendimento", onClick: onStart });
   if (s === "IN_PROGRESS" && role !== "BARBER")
-    rows.push({ label: "Ir para o PDV / Fechar conta", onClick: onGoToPdv });
+    rows.push({ label: "Ir para Vendas / Fechar conta", onClick: onGoToPdv });
   if (["SCHEDULED", "CONFIRMED", "WAITING"].includes(s)) {
     rows.push({ label: "Cliente faltou", onClick: () => onStatus("NO_SHOW") });
     rows.push({ label: "Cancelar agendamento", onClick: () => onStatus("CANCELED") });
