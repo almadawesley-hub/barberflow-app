@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 type Appointment = {
   id: string;
@@ -43,6 +44,7 @@ function dayBounds(offset: number) {
 export default function AgendaPage() {
   const { data: session } = useSession();
   const role = (session?.user as any)?.role as string | undefined;
+  const router = useRouter();
 
   const [dayOffset, setDayOffset] = useState(0);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -159,6 +161,7 @@ export default function AgendaPage() {
             onStatus={(s) => updateStatus(actionFor.id, s)}
             onStart={() => startAppointment(actionFor.id)}
             onDelete={() => removeAppointment(actionFor.id)}
+            onGoToPdv={() => router.push("/pdv")}
           />
         </ActionSheet>
       )}
@@ -203,12 +206,14 @@ function ApptActions({
   onStatus,
   onStart,
   onDelete,
+  onGoToPdv,
 }: {
   appt: Appointment;
   role?: string;
   onStatus: (s: string) => void;
   onStart: () => void;
   onDelete: () => void;
+  onGoToPdv: () => void;
 }) {
   const s = appt.status;
   const rows: { label: string; onClick: () => void }[] = [];
@@ -216,7 +221,7 @@ function ApptActions({
   if (s === "SCHEDULED" || s === "CONFIRMED") rows.push({ label: "Fazer check-in", onClick: () => onStatus("WAITING") });
   if (s === "WAITING") rows.push({ label: "Iniciar atendimento", onClick: onStart });
   if (s === "IN_PROGRESS" && role !== "BARBER")
-    rows.push({ label: "Ver comanda (em breve no PDV)", onClick: () => {} });
+    rows.push({ label: "Ir para o PDV / Fechar conta", onClick: onGoToPdv });
   if (["SCHEDULED", "CONFIRMED", "WAITING"].includes(s)) {
     rows.push({ label: "Cliente faltou", onClick: () => onStatus("NO_SHOW") });
     rows.push({ label: "Cancelar agendamento", onClick: () => onStatus("CANCELED") });
