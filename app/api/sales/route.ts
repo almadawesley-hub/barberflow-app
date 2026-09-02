@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireUser } from "@/lib/session";
+import { requireUser, requireRole } from "@/lib/session";
 import { withTenantContext } from "@/lib/tenant";
 import { logAction } from "@/lib/audit";
 
@@ -19,6 +19,7 @@ const schema = z.object({
 
 export async function GET() {
   const user = await requireUser();
+  requireRole(user, ["ADMIN", "RECEPTIONIST"]);
   const sales = await withTenantContext(user.companyId, (tx) =>
     tx.sale.findMany({
       where: { status: "concluida" },
@@ -35,6 +36,7 @@ export async function GET() {
  * produto vendido pela Ana credita a comissão certa pra cada um. */
 export async function POST(req: NextRequest) {
   const user = await requireUser();
+  requireRole(user, ["ADMIN", "RECEPTIONIST"]);
   const body = schema.parse(await req.json());
 
   const sale = await withTenantContext(user.companyId, async (tx) => {
