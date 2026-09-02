@@ -8,6 +8,7 @@ type Product = {
   id: string;
   name: string;
   sku: string | null;
+  costPrice: number | string;
   price: number | string;
   stock: number;
   minStock: number;
@@ -144,6 +145,7 @@ function Sheet({ title, children, onClose }: { title: string; children: React.Re
 function ProductForm({ product, onSaved, onDelete }: { product?: Product; onSaved: () => void; onDelete?: () => void }) {
   const [name, setName] = useState(product?.name ?? "");
   const [sku, setSku] = useState(product?.sku ?? "");
+  const [cost, setCost] = useState(product ? String(product.costPrice ?? "") : "");
   const [price, setPrice] = useState(product ? String(product.price) : "");
   const [stock, setStock] = useState(product ? String(product.stock) : "");
   const [minStock, setMinStock] = useState(product ? String(product.minStock) : "5");
@@ -154,7 +156,7 @@ function ProductForm({ product, onSaved, onDelete }: { product?: Product; onSave
 
   async function submit() {
     setSubmitting(true);
-    const body = { name, sku: sku || undefined, price: Number(price), minStock: Number(minStock) || 5 };
+    const body = { name, sku: sku || undefined, costPrice: Number(cost) || 0, price: Number(price), minStock: Number(minStock) || 5 };
     if (product) {
       await fetch(`/api/products/${product.id}`, {
         method: "PATCH",
@@ -178,34 +180,4 @@ function ProductForm({ product, onSaved, onDelete }: { product?: Product; onSave
       <input className={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Cera modeladora" />
 
       <label className={label}>SKU</label>
-      <input className={field} value={sku} onChange={(e) => setSku(e.target.value)} placeholder="Ex: CER-005" />
-
-      <label className={label}>Preço venda (R$)</label>
-      <input type="number" className={field} value={price} onChange={(e) => setPrice(e.target.value)} />
-
-      {!product && (
-        <>
-          <label className={label}>Estoque inicial</label>
-          <input type="number" className={field} value={stock} onChange={(e) => setStock(e.target.value)} />
-        </>
-      )}
-
-      <label className={label}>Estoque mínimo</label>
-      <input type="number" className={field} value={minStock} onChange={(e) => setMinStock(e.target.value)} />
-
-      <button
-        onClick={submit}
-        disabled={submitting || !name.trim() || !price}
-        className="w-full bg-brass text-ink font-bold rounded-lg py-3 text-sm disabled:opacity-60 mt-1"
-      >
-        {submitting ? "Salvando..." : product ? "Salvar alterações" : "Salvar produto"}
-      </button>
-
-      {onDelete && (
-        <button onClick={onDelete} className="w-full text-red-400 text-sm mt-3 py-2">
-          Excluir produto
-        </button>
-      )}
-    </div>
-  );
-}
+      
