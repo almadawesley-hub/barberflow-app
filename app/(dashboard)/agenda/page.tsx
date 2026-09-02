@@ -266,11 +266,40 @@ function NewAppointmentForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [localCustomers, setLocalCustomers] = useState<Customer[]>(customers);
+  const [showInlineClient, setShowInlineClient] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [creatingClient, setCreatingClient] = useState(false);
+
   useEffect(() => {
-    if (customers[0]) setCustomerId(customers[0].id);
+    setLocalCustomers(customers);
+  }, [customers]);
+
+  useEffect(() => {
+    if (localCustomers[0] && !customerId) setCustomerId(localCustomers[0].id);
     if (services[0]) setServiceId(services[0].id);
     if (barbers[0]) setBarberId(barbers[0].id);
-  }, [customers, services, barbers]);
+  }, [localCustomers, services, barbers]);
+
+  async function createClientInline() {
+    if (!newName.trim() || !newPhone.trim()) return;
+    setCreatingClient(true);
+    const res = await fetch("/api/customers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName, phone: newPhone }),
+    });
+    setCreatingClient(false);
+    if (!res.ok) return;
+    const json = await res.json();
+    const created = json.data;
+    setLocalCustomers((prev) => [created, ...prev]);
+    setCustomerId(created.id);
+    setShowInlineClient(false);
+    setNewName("");
+    setNewPhone("");
+  }
 
   async function submit() {
     setSubmitting(true);
@@ -297,8 +326,41 @@ function NewAppointmentForm({
     <div>
       <label className={label}>Cliente</label>
       <select className={field} value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
-        {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        {localCustomers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
       </select>
+
+      {!showInlineClient ? (
+        <button
+          type="button"
+          onClick={() => setShowInlineClient(true)}
+          className="text-brass text-xs font-semibold mb-3 -mt-1.5 block"
+        >
+          + Novo cliente
+        </button>
+      ) : (
+        <div className="bg-ink border border-ink-line rounded-lg p-2.5 mb-3">
+          <input
+            className="w-full bg-ink-soft border border-ink-line rounded-lg px-3 py-2 mb-2 text-ivory text-sm"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Nome do cliente"
+          />
+          <input
+            className="w-full bg-ink-soft border border-ink-line rounded-lg px-3 py-2 mb-2 text-ivory text-sm"
+            value={newPhone}
+            onChange={(e) => setNewPhone(e.target.value)}
+            placeholder="Telefone"
+          />
+          <button
+            type="button"
+            onClick={createClientInline}
+            disabled={creatingClient || !newName.trim() || !newPhone.trim()}
+            className="w-full py-2 rounded-lg bg-brass text-ink text-xs font-bold disabled:opacity-60"
+          >
+            {creatingClient ? "Adicionando..." : "Adicionar cliente"}
+          </button>
+        </div>
+      )}
 
       <label className={label}>Serviço</label>
       <select className={field} value={serviceId} onChange={(e) => setServiceId(e.target.value)}>
