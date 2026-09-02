@@ -315,6 +315,34 @@ function AvulsaSale({
   const [customerId, setCustomerId] = useState("");
   const [method, setMethod] = useState("PIX");
   const [busy, setBusy] = useState(false);
+  const [localCustomers, setLocalCustomers] = useState<Customer[]>(customers);
+  const [showInlineClient, setShowInlineClient] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [creatingClient, setCreatingClient] = useState(false);
+
+  useEffect(() => {
+    setLocalCustomers(customers);
+  }, [customers]);
+
+  async function createClientInline() {
+    if (!newName.trim() || !newPhone.trim()) return;
+    setCreatingClient(true);
+    const res = await fetch("/api/customers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName, phone: newPhone }),
+    });
+    setCreatingClient(false);
+    if (!res.ok) return;
+    const json = await res.json();
+    const created = json.data;
+    setLocalCustomers((prev) => [created, ...prev]);
+    setCustomerId(created.id);
+    setShowInlineClient(false);
+    setNewName("");
+    setNewPhone("");
+  }
 
   useEffect(() => {
     if (barbers[0]) {
@@ -450,13 +478,46 @@ function AvulsaSale({
           <>
             <label className="text-xs font-semibold text-muted block mb-1.5 mt-3">Cliente (opcional)</label>
             <select
-              className="w-full bg-ink border border-ink-line rounded-lg px-3 py-2.5 mb-3 text-ivory text-sm"
+              className="w-full bg-ink border border-ink-line rounded-lg px-3 py-2.5 mb-2 text-ivory text-sm"
               value={customerId}
               onChange={(e) => setCustomerId(e.target.value)}
             >
               <option value="">Cliente avulso</option>
-              {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {localCustomers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+
+            {!showInlineClient ? (
+              <button
+                type="button"
+                onClick={() => setShowInlineClient(true)}
+                className="text-brass text-xs font-semibold mb-3 block"
+              >
+                + Novo cliente
+              </button>
+            ) : (
+              <div className="bg-ink border border-ink-line rounded-lg p-2.5 mb-3">
+                <input
+                  className="w-full bg-ink-soft border border-ink-line rounded-lg px-3 py-2 mb-2 text-ivory text-sm"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Nome do cliente"
+                />
+                <input
+                  className="w-full bg-ink-soft border border-ink-line rounded-lg px-3 py-2 mb-2 text-ivory text-sm"
+                  value={newPhone}
+                  onChange={(e) => setNewPhone(e.target.value)}
+                  placeholder="Telefone"
+                />
+                <button
+                  type="button"
+                  onClick={createClientInline}
+                  disabled={creatingClient || !newName.trim() || !newPhone.trim()}
+                  className="w-full py-2 rounded-lg bg-brass text-ink text-xs font-bold disabled:opacity-60"
+                >
+                  {creatingClient ? "Adicionando..." : "Adicionar cliente"}
+                </button>
+              </div>
+            )}
 
             <label className="text-xs font-semibold text-muted block mb-1.5">Pagamento</label>
             <div className="flex gap-1.5">
