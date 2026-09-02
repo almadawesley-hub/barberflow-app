@@ -42,6 +42,7 @@ export default function BarbeirosPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
   const [showNew, setShowNew] = useState(false);
+  const [editing, setEditing] = useState<BarberProduction | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -78,6 +79,12 @@ export default function BarbeirosPage() {
     load();
   }
 
+  async function remove(id: string) {
+    await fetch(`/api/users/${id}`, { method: "DELETE" });
+    setEditing(null);
+    load();
+  }
+
   return (
     <div className="px-4 pt-2">
       <button onClick={() => router.back()} className="text-muted text-sm mb-3">‹ Voltar</button>
@@ -97,10 +104,13 @@ export default function BarbeirosPage() {
         {today.map((b) => (
           <div key={b.id} className="bg-ink-soft border border-ink-line rounded-xl p-3.5">
             <div className="flex items-center gap-2.5 mb-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-ink" style={{ background: b.colorHex ?? "#C79A54" }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-ink flex-shrink-0" style={{ background: b.colorHex ?? "#C79A54" }}>
                 {initials(b.name)}
               </div>
-              <span className="font-semibold text-sm">{b.name}</span>
+              <span className="font-semibold text-sm flex-1">{b.name}</span>
+              {isAdmin && (
+                <button onClick={() => setEditing(b)} className="text-muted px-1">✎</button>
+              )}
             </div>
             <div className="flex justify-between text-xs text-muted">
               <span>Produção: <b className="text-ivory">R$ {fmt(b.production)}</b></span>
@@ -157,6 +167,25 @@ export default function BarbeirosPage() {
                 setShowNew(false);
                 load();
               }}
+            />
+          </div>
+        </div>
+      )}
+
+      {editing && (
+        <div className="fixed inset-0 bg-black/55 flex items-end z-50" onClick={() => setEditing(null)}>
+          <div className="bg-ink-soft w-full rounded-t-2xl p-4 pb-8 border-t border-ink-line" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <span className="font-semibold text-sm">Editar barbeiro</span>
+              <button onClick={() => setEditing(null)} className="text-muted">✕</button>
+            </div>
+            <EditBarberForm
+              barber={editing}
+              onSaved={() => {
+                setEditing(null);
+                load();
+              }}
+              onDelete={() => remove(editing.id)}
             />
           </div>
         </div>
@@ -223,6 +252,71 @@ function NewBarberForm({ onSaved }: { onSaved: () => void }) {
       >
         {submitting ? "Salvando..." : "Salvar barbeiro"}
       </button>
+    </div>
+  );
+}
+
+function EditBarberForm({
+  barber,
+  onSaved,
+  onDelete,
+}: {
+  barber: BarberProduction;
+  onSaved: () => void;
+  onDelete: () => void;
+}) {
+  const [name, setName] = useState(barber.name);
+  const [commission, setCommission] = useState(String(barber.commissionPercent ?? "40"));
+  const [submitting, setSubmitting] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+  const field = "w-full bg-ink border border-ink-line rounded-lg px-3 py-2.5 mb-3 text-ivory text-sm";
+  const label = "text-xs font-semibold text-muted block mb-1.5";
+
+  async function submit() {
+    setSubmitting(true);
+    await fetch(`/api/users/${barber.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, commissionPercent: Number(commission) }),
+    });
+    setSubmitting(false);
+    onSaved();
+  }
+
+  return (
+    <div>
+      <label className={label}>Nome do barbeiro</label>
+      <input className={field} value={name} onChange={(e) => setName(e.target.value)} />
+
+      <label className={label}>Comissão padrão (%)</label>
+      <input type="number" className={field} value={commission} onChange={(e) => setCommission(e.target.value)} />
+
+      <button
+        onClick={submit}
+        disabled={submitting || !name.trim()}
+        className="w-full bg-brass text-ink font-bold rounded-lg py-3 text-sm disabled:opacity-60 mt-1"
+      >
+        {submitting ? "Salvando..." : "Salvar alterações"}
+      </button>
+
+      {!confirmingDelete ? (
+        <button onClick={() => setConfirmingDelete(true)} className="w-full text-red-400 text-sm mt-3 py-2">
+          Excluir barbeiro
+        </button>
+      ) : (
+        <div className="mt-3 text-center">
+          <div className="text-xs text-muted mb-2">Tem certeza? O histórico de vendas dele é preservado.</div>
+          <div className="flex gap-2">
+            <button onClick={() => setConfirmingDelete(false)} className="flex-1 py-2 rounded-lg bg-ink text-muted text-sm">
+              Cancelar
+            </button>
+            <button onClick={onDelete} className="flex-1 py-2 rounded-lg bg-red-500/20 text-red-400 text-sm font-semibold">
+              Confirmar exclusão
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
