@@ -14,10 +14,11 @@ export default function EmpresaPage() {
   const [company, setCompany] = useState<Company | null>(null);
   const [name, setName] = useState("");
   const [document, setDocument] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -26,7 +27,6 @@ export default function EmpresaPage() {
     setCompany(json.data);
     setName(json.data?.name ?? "");
     setDocument(json.data?.document ?? "");
-    setLogoUrl(json.data?.logoUrl ?? "");
     setLoading(false);
   }, []);
 
@@ -40,10 +40,27 @@ export default function EmpresaPage() {
     await fetch("/api/company", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, document: document || undefined, logoUrl: logoUrl || undefined }),
+      body: JSON.stringify({ name, document: document || undefined }),
     });
     setSubmitting(false);
     setSaved(true);
+    load();
+  }
+
+  async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError(null);
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/company/logo", { method: "POST", body: form });
+    setUploading(false);
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      setUploadError(j?.error?.message ?? "Não foi possível enviar a imagem.");
+      return;
+    }
     load();
   }
 
@@ -59,14 +76,25 @@ export default function EmpresaPage() {
       <button onClick={() => router.back()} className="text-muted text-sm mb-3">‹ Voltar</button>
       <div className="font-display text-lg font-semibold mb-4">Dados da empresa</div>
 
+      <label className={label}>Logo</label>
+      <div className="flex items-center gap-3 mb-4">
+        <img
+          src={company.logoUrl || "/logo.png"}
+          alt="Logo"
+          className="w-16 h-16 rounded-lg object-cover border border-ink-line"
+        />
+        <label className="flex-1 text-center py-2.5 rounded-lg border border-dashed border-brass/60 text-brass text-sm font-semibold cursor-pointer">
+          {uploading ? "Enviando..." : "Trocar imagem"}
+          <input type="file" accept="image/*" onChange={handleLogoChange} disabled={uploading} className="hidden" />
+        </label>
+      </div>
+      {uploadError && <div className="text-xs text-red-400 mb-3">{uploadError}</div>}
+
       <label className={label}>Nome da barbearia</label>
       <input className={field} value={name} onChange={(e) => setName(e.target.value)} />
 
       <label className={label}>CNPJ / Documento</label>
       <input className={field} value={document} onChange={(e) => setDocument(e.target.value)} />
-
-      <label className={label}>URL do logo (opcional)</label>
-      <input className={field} value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://..." />
 
       {saved && <div className="text-xs text-sage mb-3">Alterações salvas.</div>}
 
