@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireUser } from "@/lib/session";
+import { requireUser, requireRole } from "@/lib/session";
 import { withTenantContext } from "@/lib/tenant";
 import { logAction } from "@/lib/audit";
 
@@ -14,6 +14,7 @@ const schema = z.object({
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const user = await requireUser();
+  requireRole(user, ["ADMIN", "RECEPTIONIST"]);
   const body = schema.parse(await req.json());
 
   const product = await withTenantContext(user.companyId, async (tx) => {
@@ -27,6 +28,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const user = await requireUser();
+  requireRole(user, ["ADMIN", "RECEPTIONIST"]);
 
   await withTenantContext(user.companyId, async (tx) => {
     const product = await tx.product.update({ where: { id: params.id }, data: { isActive: false } });
