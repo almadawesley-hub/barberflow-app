@@ -15,20 +15,50 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         console.log("AUTH DEBUG", credentials?.email, process.env.DATABASE_URL ? "DB_URL_SET" : "DB_URL_MISSING");
-
-        console.log("[auth] authorize chamado, email recebido:", credentials?.email);
-
         if (!credentials?.email || !credentials.password) {
-          console.error("[auth] credenciais ausentes no request");
           return null;
         }
-
         try {
           const user = await prisma.user.findFirst({
             where: { email: credentials.email, isActive: true },
           });
-          console.log("[auth] usuário encontrado no banco?", !!user);
-
+          console.log("AUTH DEBUG user found:", !!user);
           if (!user) return null;
-
           const valid = await bcrypt.compare(credentials.password, user.passwordHash);
+          console.log("AUTH DEBUG password valid:", valid);
+          if (!valid) return null;
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            companyId: user.companyId,
+            role: user.role,
+            branchId: user.branchId,
+          } as any;
+        } catch (err) {
+          console.error("AUTH DEBUG ERROR:", err);
+          return null;
+        }
+      },
+    }),
+  ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.companyId = (user as any).companyId;
+        token.role = (user as any).role;
+        token.branchId = (user as any).branchId;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as any).id = token.sub;
+        (session.user as any).companyId = token.companyId;
+        (session.user as any).role = token.role;
+        (session.user as any).branchId = token.branchId;
+      }
+      return session;
+    },
+  },
+};
