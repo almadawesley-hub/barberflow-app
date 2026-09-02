@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireUser } from "@/lib/session";
+import { requireUser, requireRole } from "@/lib/session";
 import { withTenantContext } from "@/lib/tenant";
 import { logAction } from "@/lib/audit";
 
@@ -13,6 +13,7 @@ const schema = z.object({ method: z.enum(["CASH", "PIX", "DEBIT", "CREDIT"]) });
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await requireUser();
+    requireRole(user, ["ADMIN", "RECEPTIONIST"]);
     const body = schema.parse(await req.json());
 
     const sale = await withTenantContext(user.companyId, async (tx) => {
