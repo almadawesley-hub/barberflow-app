@@ -14,15 +14,23 @@ export default function ServicosPage() {
   const router = useRouter();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/services");
-    const json = await res.json();
-    setServices(json.data ?? []);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const res = await fetch("/api/services");
+      if (!res.ok) throw new Error(`/api/services respondeu ${res.status}`);
+      const json = await res.json();
+      setServices(json.data ?? []);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Erro desconhecido ao carregar.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -41,6 +49,11 @@ export default function ServicosPage() {
       <div className="font-display text-lg font-semibold mb-4">Serviços</div>
 
       {loading && <div className="text-center text-muted text-sm py-10">Carregando...</div>}
+      {loadError && (
+        <div className="text-center text-red-400 text-xs py-4 border border-red-500/40 rounded-lg mb-3">
+          Erro ao carregar: {loadError}
+        </div>
+      )}
 
       <div className="space-y-2">
         {services.map((s) => (
