@@ -29,7 +29,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col justify-center px-7 font-sans">
       <div className="text-center mb-8">
-        <div className="font-display text-2xl font-semibold">BarberFlow</div>
+        <img src="/logo.png" alt="BarberFlow" className="w-24 h-24 mx-auto mb-3" />
         <div className="text-sm text-muted mt-1">Gestão completa para sua barbearia</div>
       </div>
 
