@@ -7,6 +7,7 @@ type Company = {
   name: string;
   document: string | null;
   logoUrl: string | null;
+  monthlyGoal: number | string;
 };
 
 export default function EmpresaPage() {
@@ -14,6 +15,7 @@ export default function EmpresaPage() {
   const [company, setCompany] = useState<Company | null>(null);
   const [name, setName] = useState("");
   const [document, setDocument] = useState("");
+  const [monthlyGoal, setMonthlyGoal] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -27,6 +29,7 @@ export default function EmpresaPage() {
     setCompany(json.data);
     setName(json.data?.name ?? "");
     setDocument(json.data?.document ?? "");
+    setMonthlyGoal(json.data?.monthlyGoal ? String(json.data.monthlyGoal) : "8000");
     setLoading(false);
   }, []);
 
@@ -40,7 +43,7 @@ export default function EmpresaPage() {
     await fetch("/api/company", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, document: document || undefined }),
+      body: JSON.stringify({ name, document: document || undefined, monthlyGoal: Number(monthlyGoal) || undefined }),
     });
     setSubmitting(false);
     setSaved(true);
@@ -95,6 +98,9 @@ export default function EmpresaPage() {
 
       <label className={label}>CNPJ / Documento</label>
       <input className={field} value={document} onChange={(e) => setDocument(e.target.value)} />
+
+      <label className={label}>Meta mensal de faturamento (R$)</label>
+      <input type="number" className={field} value={monthlyGoal} onChange={(e) => setMonthlyGoal(e.target.value)} />
 
       {saved && <div className="text-xs text-sage mb-3">Alterações salvas.</div>}
 
