@@ -14,6 +14,8 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
+        console.log("AUTH DEBUG", credentials?.email, process.env.DATABASE_URL ? "DB_URL_SET" : "DB_URL_MISSING");
+
         console.log("[auth] authorize chamado, email recebido:", credentials?.email);
 
         if (!credentials?.email || !credentials.password) {
