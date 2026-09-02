@@ -39,17 +39,26 @@ export default function BarbeirosPage() {
   const [today, setToday] = useState<BarberProduction[]>([]);
   const [history, setHistory] = useState<CommissionEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
   const [showNew, setShowNew] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [tRes, hRes] = await Promise.all([fetch("/api/commissions/today"), fetch("/api/commissions/history")]);
-    const tJson = await tRes.json();
-    const hJson = await hRes.json();
-    setToday(tJson.data ?? []);
-    setHistory(hJson.data ?? []);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const [tRes, hRes] = await Promise.all([fetch("/api/commissions/today"), fetch("/api/commissions/history")]);
+      if (!tRes.ok) throw new Error(`/api/commissions/today respondeu ${tRes.status}`);
+      if (!hRes.ok) throw new Error(`/api/commissions/history respondeu ${hRes.status}`);
+      const tJson = await tRes.json();
+      const hJson = await hRes.json();
+      setToday(tJson.data ?? []);
+      setHistory(hJson.data ?? []);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Erro desconhecido ao carregar.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -72,7 +81,12 @@ export default function BarbeirosPage() {
 
       <div className="text-xs font-bold text-muted mb-2">Hoje (ainda não fechado)</div>
       {loading && <div className="text-center text-muted text-sm py-6">Carregando...</div>}
-      {!loading && today.length === 0 && <div className="text-center text-muted text-sm py-6">Nenhuma comissão registrada hoje.</div>}
+      {loadError && (
+        <div className="text-center text-red-400 text-xs py-4 border border-red-500/40 rounded-lg mb-3">
+          Erro ao carregar: {loadError}
+        </div>
+      )}
+      {!loading && !loadError && today.length === 0 && <div className="text-center text-muted text-sm py-6">Nenhuma comissão registrada hoje.</div>}
       <div className="space-y-2">
         {today.map((b) => (
           <div key={b.id} className="bg-ink-soft border border-ink-line rounded-xl p-3.5">
