@@ -65,8 +65,11 @@ export default function LoginPage() {
         <div className="bg-ink-soft flex items-center justify-center p-7 lg:p-12">
           <div className="w-full max-w-sm">
             <div className="flex flex-col items-center text-center mb-7">
-              <div className="w-14 h-14 flex items-center justify-center mb-3">
-                <img src="/logo-mark.png" alt="BarberFlow" className="w-14 h-14 object-contain" />
+              <div className="w-12 h-12 rounded-full border border-brass/50 flex items-center justify-center mb-4">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C79A54" strokeWidth="2">
+                  <path d="M12 2 4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3z" />
+                  <path d="M9.5 12.5 11 14l3.5-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </div>
               <h1 className="font-display text-xl font-semibold">Bem-vindo de volta!</h1>
               <p className="text-sm text-muted mt-1">Faça login para acessar sua barbearia</p>
