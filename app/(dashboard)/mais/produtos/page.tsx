@@ -22,15 +22,23 @@ export default function ProdutosPage() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/products");
-    const json = await res.json();
-    setProducts(json.data ?? []);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const res = await fetch("/api/products");
+      if (!res.ok) throw new Error(`/api/products respondeu ${res.status}`);
+      const json = await res.json();
+      setProducts(json.data ?? []);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Erro desconhecido ao carregar.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -60,6 +68,11 @@ export default function ProdutosPage() {
       </div>
 
       {loading && <div className="text-center text-muted text-sm py-10">Carregando...</div>}
+      {loadError && (
+        <div className="text-center text-red-400 text-xs py-4 border border-red-500/40 rounded-lg mb-3">
+          Erro ao carregar: {loadError}
+        </div>
+      )}
 
       <div className="space-y-2">
         {products.map((p) => {
