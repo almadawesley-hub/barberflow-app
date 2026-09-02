@@ -48,13 +48,14 @@ enum TransactionType {
 }
 
 model Company {
-  id        String   @id @default(uuid())
-  name      String
-  document  String?
-  logoUrl   String?  @map("logo_url")
-  timezone  String   @default("America/Sao_Paulo")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(uuid())
+  name        String
+  document    String?
+  logoUrl     String?  @map("logo_url")
+  monthlyGoal Decimal  @default(8000) @map("monthly_goal") @db.Decimal(10, 2)
+  timezone    String   @default("America/Sao_Paulo")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   branches      Branch[]
   users         User[]
