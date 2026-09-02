@@ -152,6 +152,7 @@ function ComandaDetail({
   const [catalogTab, setCatalogTab] = useState<"servicos" | "produtos">("servicos");
   const [method, setMethod] = useState("PIX");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const total = comandaTotal(comanda);
 
   async function addItem(type: "SERVICE" | "PRODUCT", refId: string) {
@@ -178,13 +179,19 @@ function ComandaDetail({
 
   async function finalize() {
     setBusy(true);
+    setError(null);
     const res = await fetch(`/api/comandas/${comanda.id}/finalize`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ method }),
     });
     setBusy(false);
-    if (res.ok) onBack();
+    if (res.ok) {
+      onBack();
+      return;
+    }
+    const j = await res.json().catch(() => ({}));
+    setError(j?.error?.message ?? `Erro ${res.status} ao fechar a conta.`);
   }
 
   return (
@@ -273,6 +280,7 @@ function ComandaDetail({
           <span className="text-sm text-muted">Total da conta</span>
           <span className="font-display text-xl font-semibold text-brass">R$ {fmt(total)}</span>
         </div>
+        {error && <div className="text-xs text-red-400 mb-2.5">{error}</div>}
         <button
           onClick={finalize}
           disabled={busy || comanda.items.length === 0}
