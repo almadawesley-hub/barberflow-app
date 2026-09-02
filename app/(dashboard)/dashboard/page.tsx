@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { DollarSign, Ticket, Users, PackageX, Target, Trophy } from "lucide-react";
 
 type Summary = {
   totalMes: number;
@@ -54,8 +55,8 @@ export default function DashboardPage() {
   }, [load]);
 
   return (
-    <div className="px-4 pt-2">
-      <h1 className="font-display text-lg font-semibold mb-4">Olá, {session?.user?.name}</h1>
+    <div className="px-4 pt-3">
+      <h1 className="font-display text-xl font-semibold mb-4">Olá, {session?.user?.name}</h1>
 
       {loading && <div className="text-center text-muted text-sm py-10">Carregando...</div>}
       {loadError && (
@@ -66,16 +67,16 @@ export default function DashboardPage() {
 
       {summary && (
         <>
-          <div className="grid grid-cols-2 gap-2.5 mb-3">
-            <MetricCard label="Faturamento (mês)" value={`R$ ${fmt(summary.totalMes)}`} accent="text-brass" />
-            <MetricCard label="Ticket médio" value={`R$ ${fmt(Math.round(summary.ticketMedio))}`} accent="text-sage" />
-            <MetricCard label="Atendimentos hoje" value={String(summary.atendConcluidos)} sub={`${summary.atendAgendados} agendados`} />
-            <MetricCard label="Estoque baixo" value={String(summary.estoqueBaixo)} sub={`${summary.esgotados} esgotados`} accent="text-red-400" />
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <MetricCard icon={DollarSign} accent="#C79A54" value={`R$ ${fmt(summary.totalMes)}`} label="Faturamento (mês)" />
+            <MetricCard icon={Ticket} accent="#6E7E58" value={`R$ ${fmt(Math.round(summary.ticketMedio))}`} label="Ticket médio" />
+            <MetricCard icon={Users} accent="#8A6C3C" value={String(summary.atendConcluidos)} label="Atendimentos hoje" sub={`${summary.atendAgendados} agendados`} />
+            <MetricCard icon={PackageX} accent="#B54A3C" value={String(summary.estoqueBaixo)} label="Estoque baixo" sub={`${summary.esgotados} esgotados`} />
           </div>
 
-          <div className="bg-ink-soft border border-ink-line rounded-2xl p-4 mb-3">
-            <div className="flex justify-between items-baseline mb-2">
-              <span className="text-xs font-bold text-muted">Meta mensal</span>
+          <SectionCard icon={Target}>
+            <div className="flex justify-between items-baseline mb-2.5">
+              <span className="font-semibold text-sm">Meta mensal</span>
               <span className="text-xs text-muted">R$ {fmt(summary.totalMes)} / R$ {fmt(summary.metaMensal)}</span>
             </div>
             <div className="h-2 rounded bg-ink overflow-hidden">
@@ -84,43 +85,79 @@ export default function DashboardPage() {
                 style={{ width: `${Math.min(100, Math.round((summary.totalMes / summary.metaMensal) * 100))}%` }}
               />
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="bg-ink-soft border border-ink-line rounded-2xl p-4 mb-3">
-            <div className="text-xs font-bold text-muted mb-2.5">Clientes</div>
-            <div className="flex gap-5">
+          <SectionCard icon={Users}>
+            <div className="font-semibold text-sm mb-3">Clientes</div>
+            <div className="flex">
               <MiniStat label="Novos" value={summary.novos} />
+              <div className="w-px bg-ink-line mx-4" />
               <MiniStat label="VIP" value={summary.vip} />
+              <div className="w-px bg-ink-line mx-4" />
               <MiniStat label="Inativos" value={summary.inativos} />
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="bg-ink-soft border border-ink-line rounded-2xl p-4">
-            <div className="text-xs font-bold text-muted mb-2.5">Ranking de hoje</div>
+          <SectionCard icon={Trophy}>
+            <div className="font-semibold text-sm mb-3">Ranking de hoje</div>
             {summary.ranking.length === 0 && <div className="text-xs text-muted">Nenhuma venda hoje ainda.</div>}
             {summary.ranking.map((b, i) => (
-              <div key={b.id} className="flex items-center gap-2.5 py-1.5 border-b border-ink-line last:border-0">
-                <span className="text-sm w-4">{["🥇", "🥈", "🥉"][i] ?? "•"}</span>
-                <div className="w-6.5 h-6.5 rounded-full flex items-center justify-center text-[11px] font-bold text-ink" style={{ background: b.colorHex ?? "#C79A54" }}>
+              <div key={b.id} className="flex items-center gap-2.5 py-2 border-b border-ink-line last:border-0">
+                <span className="text-sm w-5">{["🥇", "🥈", "🥉"][i] ?? "•"}</span>
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-ink flex-shrink-0"
+                  style={{ background: b.colorHex ?? "#C79A54" }}
+                >
                   {initials(b.name)}
                 </div>
-                <span className="flex-1 text-sm">{b.name}</span>
+                <span className="flex-1 text-sm font-medium">{b.name}</span>
                 <span className="text-sm font-semibold text-brass">R$ {fmt(b.total)}</span>
               </div>
             ))}
-          </div>
+          </SectionCard>
         </>
       )}
     </div>
   );
 }
 
-function MetricCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: string }) {
+function MetricCard({
+  icon: Icon,
+  accent,
+  value,
+  label,
+  sub,
+}: {
+  icon: any;
+  accent: string;
+  value: string;
+  label: string;
+  sub?: string;
+}) {
   return (
-    <div className="bg-ink-soft border border-ink-line rounded-2xl p-3.5">
-      <div className={`font-display text-lg font-semibold ${accent ?? ""}`}>{value}</div>
-      <div className="text-[11px] text-muted mt-0.5">{label}</div>
-      {sub && <div className="text-[10px] text-muted">{sub}</div>}
+    <div className="relative bg-ink-soft border border-ink-line rounded-2xl p-4 overflow-hidden">
+      <svg className="absolute bottom-0 left-0 w-full h-10 opacity-25" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <path d="M0 32 Q 40 8, 80 24 T 200 16 V40 H0 Z" fill={accent} />
+      </svg>
+      <div className="relative z-10">
+        <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-2.5" style={{ background: `${accent}22` }}>
+          <Icon size={16} color={accent} />
+        </div>
+        <div className="font-display text-lg font-semibold" style={{ color: accent }}>{value}</div>
+        <div className="text-[11px] text-muted mt-0.5">{label}</div>
+        {sub && <div className="text-[10px] text-muted">{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+function SectionCard({ icon: Icon, children }: { icon: any; children: React.ReactNode }) {
+  return (
+    <div className="flex gap-3 bg-ink-soft border border-ink-line rounded-2xl p-4 mb-3">
+      <div className="w-9 h-9 rounded-lg bg-brass/15 flex items-center justify-center flex-shrink-0">
+        <Icon size={16} color="#C79A54" />
+      </div>
+      <div className="flex-1 min-w-0">{children}</div>
     </div>
   );
 }
@@ -128,7 +165,7 @@ function MetricCard({ label, value, sub, accent }: { label: string; value: strin
 function MiniStat({ label, value }: { label: string; value: number }) {
   return (
     <div>
-      <div className="font-display text-lg font-semibold">{value}</div>
+      <div className="font-display text-lg font-semibold text-brass">{value}</div>
       <div className="text-[11px] text-muted">{label}</div>
     </div>
   );
