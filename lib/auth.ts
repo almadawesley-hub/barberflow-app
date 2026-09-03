@@ -80,11 +80,15 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        if (credentials.email.toLowerCase() !== expectedEmail.toLowerCase()) {
+        const receivedEmail = credentials.email.trim().toLowerCase();
+        const expectedEmailNormalized = expectedEmail.trim().toLowerCase();
+        console.log("[platform-auth] comparação exata:", JSON.stringify(receivedEmail), "vs", JSON.stringify(expectedEmailNormalized));
+
+        if (receivedEmail !== expectedEmailNormalized) {
           console.error("[platform-auth] e-mail não bate");
           return null;
         }
-        const valid = await bcrypt.compare(credentials.password, expectedHash);
+        const valid = await bcrypt.compare(credentials.password, expectedHash.trim());
         console.log("[platform-auth] senha bateu?", valid);
         if (!valid) return null;
 
