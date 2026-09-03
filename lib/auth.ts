@@ -12,6 +12,7 @@ type AuthLookupRow = {
   password_hash: string;
   role: "ADMIN" | "RECEPTIONIST" | "BARBER";
   is_active: boolean;
+  subscription_status: string | null;
 };
 
 export const authOptions: NextAuthOptions = {
@@ -38,6 +39,11 @@ export const authOptions: NextAuthOptions = {
           `;
           const user = rows[0];
           if (!user) return null;
+
+          if (user.subscription_status === "suspended") {
+            console.error("[auth] login bloqueado — empresa suspensa:", user.company_id);
+            return null;
+          }
 
           const valid = await bcrypt.compare(credentials.password, user.password_hash);
           if (!valid) return null;
