@@ -11,7 +11,16 @@ const schema = z.object({
   adminPassword: z.string().min(6),
 });
 
-type CompanyRow = { id: string; name: string; created_at: string; user_count: bigint };
+type CompanyRow = {
+  id: string;
+  name: string;
+  created_at: string;
+  user_count: bigint;
+  plan_id: string | null;
+  plan_name: string | null;
+  max_users: number | null;
+  subscription_status: string | null;
+};
 
 export async function GET() {
   try {
