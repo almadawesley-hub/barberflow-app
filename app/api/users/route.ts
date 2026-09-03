@@ -35,21 +35,48 @@ export async function POST(req: NextRequest) {
   const body = schema.parse(await req.json());
   const passwordHash = await bcrypt.hash(body.password, 10);
 
-  const created = await withTenantContext(user.companyId, async (tx) => {
-    const newUser = await tx.user.create({
-      data: {
-        companyId: user.companyId,
-        name: body.name,
-        email: body.email,
-        passwordHash,
-        role: body.role,
-        commissionPercent: body.role === "BARBER" ? body.commissionPercent ?? 40 : undefined,
-        colorHex: body.colorHex,
-      },
-    });
-    await logAction(tx, user.companyId, user.id, `Usuário cadastrado — ${newUser.name} (${newUser.role})`);
-    return newUser;
-  });
+  try {
+    const created = await withTenantContext(user.companyId, async (tx) => {
+      const subscription = await tx.subscription.findUnique({
+        where: { companyId: user.companyId },
+        include: { plan: true },
+      });
 
-  return NextResponse.json({ data: { id: created.id, name: created.name, email: created.email, role: created.role } }, { status: 201 });
+      if (subscription?.status === "suspended") {
+        const err = new Error("Sua assinatura está suspensa. Fale com o suporte pra reativar.") as Error & { status?: number };
+        err.status = 403;
+        throw err;
+      }
+
+      if (subscription?.plan?.maxUsers != null) {
+        const currentCount = await tx.user.count({ where: { isActive: true } });
+        if (currentCount >= subscription.plan.maxUsers) {
+          const err = new Error(
+            `Limite de usuários do plano ${subscription.plan.name} atingido (${subscription.plan.maxUsers}). Fale com o suporte pra fazer upgrade.`
+          ) as Error & { status?: number };
+          err.status = 403;
+          throw err;
+        }
+      }
+
+      const newUser = await tx.user.create({
+        data: {
+          companyId: user.companyId,
+          name: body.name,
+          email: body.email,
+          passwordHash,
+          role: body.role,
+          commissionPercent: body.role === "BARBER" ? body.commissionPercent ?? 40 : undefined,
+          colorHex: body.colorHex,
+        },
+      });
+      await logAction(tx, user.companyId, user.id, `Usuário cadastrado — ${newUser.name} (${newUser.role})`);
+      return newUser;
+    });
+
+    return NextResponse.json({ data: { id: created.id, name: created.name, email: created.email, role: created.role } }, { status: 201 });
+  } catch (err) {
+    const status = (err as any)?.status ?? 500;
+    return NextResponse.json({ error: { message: err instanceof Error ? err.message : String(err) } }, { status });
+  }
 }
