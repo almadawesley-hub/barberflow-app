@@ -71,10 +71,21 @@ export const authOptions: NextAuthOptions = {
 
         const expectedEmail = process.env.PLATFORM_ADMIN_EMAIL;
         const expectedHash = process.env.PLATFORM_ADMIN_PASSWORD_HASH;
-        if (!expectedEmail || !expectedHash) return null;
+        console.log("[platform-auth] PLATFORM_ADMIN_EMAIL definida?", !!expectedEmail);
+        console.log("[platform-auth] PLATFORM_ADMIN_PASSWORD_HASH definida?", !!expectedHash);
+        console.log("[platform-auth] email recebido:", credentials.email, "| email esperado:", expectedEmail);
 
-        if (credentials.email.toLowerCase() !== expectedEmail.toLowerCase()) return null;
+        if (!expectedEmail || !expectedHash) {
+          console.error("[platform-auth] variáveis de ambiente ausentes");
+          return null;
+        }
+
+        if (credentials.email.toLowerCase() !== expectedEmail.toLowerCase()) {
+          console.error("[platform-auth] e-mail não bate");
+          return null;
+        }
         const valid = await bcrypt.compare(credentials.password, expectedHash);
+        console.log("[platform-auth] senha bateu?", valid);
         if (!valid) return null;
 
         return { id: "platform", name: "Super Admin", email: expectedEmail, role: "PLATFORM_ADMIN" } as any;
