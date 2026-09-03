@@ -4,11 +4,17 @@ import type { NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // A página de login da plataforma é sempre pública — precisa sair
+  // daqui ANTES de qualquer checagem, senão cai na regra de "rota
+  // normal exige sessão de empresa" e redireciona pro /login errado.
+  if (pathname === "/super-admin/login") {
+    return NextResponse.next();
+  }
+
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  const isSuperAdminArea = pathname.startsWith("/super-admin") && pathname !== "/super-admin/login";
-
-  if (isSuperAdminArea) {
+  if (pathname.startsWith("/super-admin")) {
     if (!token || token.role !== "PLATFORM_ADMIN") {
       return NextResponse.redirect(new URL("/super-admin/login", req.url));
     }
