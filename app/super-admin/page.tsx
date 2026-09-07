@@ -62,7 +62,7 @@ export default function SuperAdminPage() {
     <div className="min-h-screen bg-ink text-ivory font-sans">
       <header className="flex items-center justify-between px-5 py-4 border-b border-ink-line">
         <div>
-          <div className="font-display text-lg font-semibold">BarberFlow</div>
+          <div className="font-display text-lg font-semibold text-brass tracking-wide">NAVIGA</div>
           <div className="text-xs text-muted">Painel da plataforma</div>
         </div>
         <button onClick={() => signOut({ callbackUrl: "/super-admin/login" })} className="text-xs font-semibold border border-ink-line rounded-lg px-3 py-2">
