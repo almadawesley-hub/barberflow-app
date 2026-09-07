@@ -30,7 +30,7 @@ export default function SuperAdminLoginPage() {
     <div className="min-h-screen bg-ink text-ivory font-sans flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="font-display text-xl font-semibold">BarberFlow</div>
+          <div className="font-display text-xl font-semibold text-brass tracking-wide">NAVIGA</div>
           <div className="text-xs text-muted mt-1 tracking-widest uppercase">Painel da plataforma</div>
         </div>
 
