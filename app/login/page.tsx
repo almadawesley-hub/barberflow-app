@@ -45,9 +45,8 @@ export default function LoginPage() {
           />
 
           <div className="relative z-10">
-            <img src="/logo-mark.png" alt="BarberFlow" className="w-16 h-16 mb-4 object-contain" />
-            <div className="font-display text-2xl font-semibold tracking-wide">
-              BARBER<span className="text-brass">FLOW</span>
+            <div className="font-display text-3xl font-semibold mb-4 tracking-wide text-brass">
+              NAVIGA
             </div>
             <div className="text-xs text-muted tracking-[0.2em] mt-3 uppercase">
               Gestão completa para sua barbearia
@@ -143,7 +142,7 @@ export default function LoginPage() {
             </form>
 
             <div className="text-center text-[11px] text-muted mt-8">
-              © {new Date().getFullYear()} BarberFlow. Todos os direitos reservados.
+              © {new Date().getFullYear()} Naviga. Todos os direitos reservados.
             </div>
           </div>
         </div>
