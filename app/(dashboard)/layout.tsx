@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { data: session } = useSession();
   const pathname = usePathname();
   const role = (session?.user as any)?.role as string | undefined;
-  const [logoUrl, setLogoUrl] = useState("/logo-mark.png");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   const tabs = ALL_TABS.filter((t) => !role || t.roles.includes(role));
 
@@ -36,12 +36,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-ink text-ivory font-sans">
       <header className="flex items-center justify-between px-4 py-3 border-b border-ink-line">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl border border-brass/40 bg-ink-soft flex items-center justify-center flex-shrink-0">
-            <img src={logoUrl} alt="BarberFlow" className="w-6 h-6 object-contain" onError={() => setLogoUrl("/logo-mark.png")} />
-          </div>
+          {logoUrl && (
+            <div className="w-10 h-10 rounded-xl border border-brass/40 bg-ink-soft flex items-center justify-center flex-shrink-0">
+              <img src={logoUrl} alt="" className="w-6 h-6 object-contain" onError={() => setLogoUrl(null)} />
+            </div>
+          )}
           <div>
-            <div className="font-display text-lg font-semibold leading-tight">
-              Barber<span className="text-brass">Flow</span>
+            <div className="font-display text-lg font-semibold leading-tight text-brass tracking-wide">
+              NAVIGA
             </div>
             <div className="text-xs text-muted">{session?.user?.name} · {role}</div>
           </div>
