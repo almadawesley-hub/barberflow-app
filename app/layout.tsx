@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "BarberFlow",
+  title: "Naviga",
   description: "Gestão completa para sua barbearia",
 };
 
