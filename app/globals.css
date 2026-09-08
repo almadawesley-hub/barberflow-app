@@ -2,7 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tema claro (padrão) — paleta monocromática */
+:root {
+  --color-ink: #FAFAF9;
+  --color-ink-soft: #F1F0EE;
+  --color-ink-line: #E2E0DC;
+  --color-ivory: #1A1917;
+  --color-muted: #8A8681;
+  --color-brass: #1A1917;
+  --color-brass-contrast: #FAFAF9;
+  --color-sage: #3F3D39;
+}
+
+/* Tema escuro */
+.dark {
+  --color-ink: #0B0B0A;
+  --color-ink-soft: #181715;
+  --color-ink-line: #2D2C29;
+  --color-ivory: #F2F0ED;
+  --color-muted: #8F8B85;
+  --color-brass: #F2F0ED;
+  --color-brass-contrast: #0B0B0A;
+  --color-sage: #C9C6C0;
+}
+
 body {
-  background: #1b1815;
-  color: #ede5d6;
+  background: var(--color-ink);
+  color: var(--color-ivory);
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
