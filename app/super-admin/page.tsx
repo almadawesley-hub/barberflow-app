@@ -17,9 +17,9 @@ type Company = {
 type Plan = { id: string; name: string; price_monthly: string; max_users: number | null; max_branches: number | null };
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  trial: { label: "Teste", color: "#C4903D" },
-  active: { label: "Ativa", color: "#6E7E58" },
-  suspended: { label: "Suspensa", color: "#9B4131" },
+  trial: { label: "Teste", color: "var(--color-muted)" },
+  active: { label: "Ativa", color: "var(--color-muted)" },
+  suspended: { label: "Suspensa", color: "var(--color-ivory)" },
 };
 
 export default function SuperAdminPage() {
@@ -59,10 +59,10 @@ export default function SuperAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-ink text-ivory font-sans">
+    <div className="dark min-h-screen bg-ink text-ivory font-sans">
       <header className="flex items-center justify-between px-5 py-4 border-b border-ink-line">
         <div>
-          <div className="font-display text-lg font-semibold text-brass tracking-wide">NAVIGA</div>
+          <img src="/naviga-wordmark.png" alt="Naviga" className="h-4 object-contain" />
           <div className="text-xs text-muted">Painel da plataforma</div>
         </div>
         <button onClick={() => signOut({ callbackUrl: "/super-admin/login" })} className="text-xs font-semibold border border-ink-line rounded-lg px-3 py-2">
@@ -87,7 +87,7 @@ export default function SuperAdminPage() {
 
         <div className="space-y-2">
           {companies.map((c) => {
-            const status = STATUS_LABEL[c.subscription_status ?? ""] ?? { label: "Sem plano", color: "#5C6874" };
+            const status = STATUS_LABEL[c.subscription_status ?? ""] ?? { label: "Sem plano", color: "var(--color-muted)" };
             return (
               <button
                 key={c.id}
