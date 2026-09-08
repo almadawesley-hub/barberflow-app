@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, Users, TrendingUp, MoreHorizontal, LogOut } from "lucide-react";
+import { Home, Calendar, Users, TrendingUp, MoreHorizontal, LogOut, Sun, Moon } from "lucide-react";
+import { useTheme } from "../providers";
 
 const ALL_TABS = [
   { href: "/dashboard", label: "Início", icon: Home, roles: ["ADMIN"] },
@@ -17,10 +18,12 @@ const ALL_TABS = [
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const { theme, toggleTheme } = useTheme();
   const role = (session?.user as any)?.role as string | undefined;
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   const tabs = ALL_TABS.filter((t) => !role || t.roles.includes(role));
+  const wordmarkSrc = theme === "dark" ? "/naviga-wordmark.png" : "/naviga-wordmark-black.png";
 
   useEffect(() => {
     if (!session) return;
@@ -37,24 +40,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <header className="flex items-center justify-between px-4 py-3 border-b border-ink-line">
         <div className="flex items-center gap-2.5">
           {logoUrl && (
-            <div className="w-10 h-10 rounded-xl border border-brass/40 bg-ink-soft flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl border border-ink-line bg-ink-soft flex items-center justify-center flex-shrink-0">
               <img src={logoUrl} alt="" className="w-6 h-6 object-contain" onError={() => setLogoUrl(null)} />
             </div>
           )}
           <div>
-            <div className="font-display text-lg font-semibold leading-tight text-brass tracking-wide">
-              NAVIGA
-            </div>
-            <div className="text-xs text-muted">{session?.user?.name} · {role}</div>
+            <img src={wordmarkSrc} alt="Naviga" className="h-4 object-contain" />
+            <div className="text-xs text-muted mt-1">{session?.user?.name} · {role}</div>
           </div>
         </div>
-        <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex items-center gap-1.5 text-xs font-semibold text-ivory border border-ink-line rounded-lg px-3 py-2"
-        >
-          <LogOut size={13} />
-          Sair
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            aria-label="Alternar tema"
+            className="flex items-center justify-center w-8 h-8 rounded-lg border border-ink-line text-ivory"
+          >
+            {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="flex items-center gap-1.5 text-xs font-semibold text-ivory border border-ink-line rounded-lg px-3 py-2"
+          >
+            <LogOut size={13} />
+            Sair
+          </button>
+        </div>
       </header>
 
       <main className="pb-24">{children}</main>
