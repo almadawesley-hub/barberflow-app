@@ -104,7 +104,7 @@ export default function BarbeirosPage() {
         {today.map((b) => (
           <div key={b.id} className="bg-ink-soft border border-ink-line rounded-xl p-3.5">
             <div className="flex items-center gap-2.5 mb-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-ink flex-shrink-0" style={{ background: b.colorHex ?? "#C79A54" }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-ink flex-shrink-0" style={{ background: b.colorHex ?? "var(--color-muted)" }}>
                 {initials(b.name)}
               </div>
               <span className="font-semibold text-sm flex-1">{b.name}</span>
@@ -208,7 +208,7 @@ function NewBarberForm({ onSaved }: { onSaved: () => void }) {
   async function submit() {
     setSubmitting(true);
     setError(null);
-    const palette = ["#C79A54", "#6E7E58", "#9B4131", "#7A8FBF", "#B0784F", "#5C6874"];
+    const palette = ["#8A8681", "#6B6863", "#A39E97", "#57534E", "#B5B0A8", "#3F3D39"];
     const res = await fetch("/api/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
