@@ -28,7 +28,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-ink font-sans flex items-center justify-center p-4 lg:p-8">
+    <div className="dark min-h-screen bg-ink font-sans flex items-center justify-center p-4 lg:p-8">
       <div className="w-full max-w-5xl grid lg:grid-cols-2 rounded-3xl overflow-hidden border border-ink-line lg:border-0">
         {/* Painel esquerdo — só aparece em telas grandes */}
         <div className="hidden lg:flex relative flex-col justify-between p-10 overflow-hidden bg-ink">
@@ -45,12 +45,7 @@ export default function LoginPage() {
           />
 
           <div className="relative z-10">
-            <div className="font-display text-3xl font-semibold mb-4 tracking-wide text-brass">
-              NAVIGA
-            </div>
-            <div className="text-xs text-muted tracking-[0.2em] mt-3 uppercase">
-              Gestão completa para sua barbearia
-            </div>
+            <img src="/naviga-completo.png" alt="Naviga — Gestão de barbearia" className="w-52 object-contain" />
           </div>
 
           <div className="relative z-10 grid grid-cols-3 gap-3">
@@ -64,12 +59,7 @@ export default function LoginPage() {
         <div className="bg-ink-soft flex items-center justify-center p-7 lg:p-12">
           <div className="w-full max-w-sm">
             <div className="flex flex-col items-center text-center mb-7">
-              <div className="w-12 h-12 rounded-full border border-brass/50 flex items-center justify-center mb-4">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C79A54" strokeWidth="2">
-                  <path d="M12 2 4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3z" />
-                  <path d="M9.5 12.5 11 14l3.5-4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
+              <img src="/naviga-icone.png" alt="Naviga" className="w-14 h-14 object-contain mb-4" />
               <h1 className="font-display text-xl font-semibold">Bem-vindo de volta!</h1>
               <p className="text-sm text-muted mt-1">Faça login para acessar sua barbearia</p>
             </div>
