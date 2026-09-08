@@ -12,10 +12,10 @@ type Customer = {
 };
 
 const TAG_LABEL: Record<string, { label: string; color: string }> = {
-  novo: { label: "Novo", color: "#5C6874" },
-  recorrente: { label: "Recorrente", color: "#C79A54" },
-  vip: { label: "VIP", color: "#6E7E58" },
-  inativo: { label: "Inativo", color: "#9B4131" },
+  novo: { label: "Novo", color: "var(--color-muted)" },
+  recorrente: { label: "Recorrente", color: "var(--color-muted)" },
+  vip: { label: "VIP", color: "var(--color-ivory)" },
+  inativo: { label: "Inativo", color: "var(--color-muted)" },
 };
 
 function initials(name: string) {
