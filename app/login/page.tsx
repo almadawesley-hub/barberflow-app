@@ -28,7 +28,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="dark min-h-screen bg-ink font-sans flex items-center justify-center p-4 lg:p-8">
+    <div className="dark min-h-screen bg-ink text-ivory font-sans flex items-center justify-center p-4 lg:p-8">
       <div className="w-full max-w-5xl grid lg:grid-cols-2 rounded-3xl overflow-hidden border border-ink-line lg:border-0">
         {/* Painel esquerdo — só aparece em telas grandes */}
         <div className="hidden lg:flex relative flex-col justify-between p-10 overflow-hidden bg-ink">
@@ -59,7 +59,7 @@ export default function LoginPage() {
         <div className="bg-ink-soft flex items-center justify-center p-7 lg:p-12">
           <div className="w-full max-w-sm">
             <div className="flex flex-col items-center text-center mb-7">
-              <img src="/naviga-icone.png" alt="Naviga" className="w-14 h-14 object-contain mb-4" />
+              <img src="/naviga-completo.png" alt="Naviga — Gestão de barbearia" className="w-40 object-contain mb-5" />
               <h1 className="font-display text-xl font-semibold">Bem-vindo de volta!</h1>
               <p className="text-sm text-muted mt-1">Faça login para acessar sua barbearia</p>
             </div>
