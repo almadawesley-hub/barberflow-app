@@ -27,11 +27,12 @@ export default function SuperAdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-ink text-ivory font-sans flex items-center justify-center p-6">
+    <div className="dark min-h-screen bg-ink text-ivory font-sans flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="font-display text-xl font-semibold text-brass tracking-wide">NAVIGA</div>
-          <div className="text-xs text-muted mt-1 tracking-widest uppercase">Painel da plataforma</div>
+          <img src="/naviga-icone.png" alt="" className="w-14 h-14 object-contain mx-auto mb-3" />
+          <img src="/naviga-wordmark.png" alt="Naviga" className="h-5 object-contain mx-auto" />
+          <div className="text-xs text-muted mt-2 tracking-widest uppercase">Painel da plataforma</div>
         </div>
 
         <form onSubmit={handleSubmit}>
