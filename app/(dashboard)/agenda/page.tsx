@@ -128,7 +128,7 @@ export default function AgendaPage() {
                 </div>
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-ink flex-shrink-0"
-                  style={{ background: a.barber.colorHex ?? "#C79A54" }}
+                  style={{ background: a.barber.colorHex ?? "var(--color-muted)" }}
                 >
                   {initials(a.barber.name)}
                 </div>
