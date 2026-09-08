@@ -1,17 +1,19 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        ink: "#1B1815",
-        "ink-soft": "#24201B",
-        "ink-line": "#3A342C",
-        ivory: "#EDE5D6",
-        muted: "#9C917E",
-        brass: "#C79A54",
-        sage: "#6E7E58",
+        ink: "var(--color-ink)",
+        "ink-soft": "var(--color-ink-soft)",
+        "ink-line": "var(--color-ink-line)",
+        ivory: "var(--color-ivory)",
+        muted: "var(--color-muted)",
+        brass: "var(--color-brass)",
+        "brass-contrast": "var(--color-brass-contrast)",
+        sage: "var(--color-sage)",
       },
       fontFamily: {
         display: ["Fraunces", "serif"],
